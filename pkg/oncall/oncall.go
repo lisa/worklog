@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -14,9 +15,17 @@ const dayTemplate string = `= %s =
 
 === %s PM Handover ===
 
-== %s Pages ==
+== %s %s ==
 
 `
+
+var (
+	shiftMap = map[string]string{
+		"primary":   "Pages",
+		"weekend":   "Pages",
+		"secondary": "Tickets",
+	}
+)
 
 func monthToShort(m time.Month) string {
 	switch m {
@@ -59,8 +68,8 @@ func printCategories(day int, month time.Month, year int, kind string) {
 	fmt.Printf("[[Category:On-Call/%s]]\n", kind)
 }
 
-func printDay(day string) {
-	fmt.Printf(dayTemplate, day, day, day, day)
+func printDay(day, worktype string) {
+	fmt.Printf(dayTemplate, day, day, day, day, worktype)
 }
 
 func main() {
@@ -73,11 +82,12 @@ func main() {
 	today := time.Date(*currentYear, time.Month(*currentMonth), *currentDay, 8, 0, 0, 0, time.Now().Location())
 
 	// On-call day order
-	days := []string{"Friday", "Monday", "Tuesday", "Wednesday", "Thursday"}
+	days := []string{"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"}
 
 	printCategories(today.Day(), today.Month(), today.Year(), *onCallType)
+	fmt.Println()
 
 	for _, day := range days {
-		printDay(day)
+		printDay(day, shiftMap[strings.ToLower(*onCallType)])
 	}
 }
