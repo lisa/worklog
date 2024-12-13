@@ -37,6 +37,8 @@ func monthToShort(m time.Month) string {
 }
 
 func main() {
+	verbose := flag.Bool("verbose", false, "Be verbose?")
+
 	currentYear := flag.Int("cy", time.Now().Year(), "Current year")
 	currentMonth := flag.Int("cm", int(time.Now().Month()), "Current workday's month (eg 1-12)")
 	currentDay := flag.Int("cd", time.Now().Day(), "Current workday's day (eg 1-31)")
@@ -49,7 +51,16 @@ func main() {
 	prevMonth := flag.Int("pm", -1, "Previous workday's month (eg 1-12)")
 	prevDay := flag.Int("pd", -1, "Previous workday's day (eg 1-31)")
 
+	friday := flag.Bool("friday", false, "Today is Friday, so act as if -nd currentDay+3 was passed to save mental math")
+	monday := flag.Bool("monday", false, "Today is Monday, so act as if -pd currentDay-3 was passed to save mental math")
+
 	flag.Parse()
+	if *friday {
+		*nextDay = *currentDay + 3
+	}
+	if *monday {
+		*prevDay = *currentDay - 3
+	}
 
 	// Today, as far as the wiki is concerned. All of these are from POV of the Wiki talking about work days
 	today := time.Date(*currentYear, time.Month(*currentMonth), *currentDay, 8, 0, 0, 0, time.Now().Location())
@@ -96,5 +107,13 @@ func main() {
 	fmt.Printf("{{Worklog|currentyear=%d|currentmonth=%s|currentday=%02d", today.Year(), monthToShort(today.Month()), today.Day())
 	fmt.Printf("|nextyear=%d|nextmonth=%s|nextday=%d", nextDate.Year(), monthToShort(nextDate.Month()), nextDate.Day())
 	fmt.Printf("|prevyear=%d|prevmonth=%s|prevday=%d}}\n", prevDate.Year(), monthToShort(prevDate.Month()), prevDate.Day())
+
+	if *verbose {
+		// Print out the days of the week for the days surrounding the current day
+		fmt.Printf("Prev: %s; Today: %s; Next day: %s\n",
+			prevDate.Format("Monday"),
+			today.Format("Monday"),
+			nextDate.Format("Monday"))
+	}
 
 }
